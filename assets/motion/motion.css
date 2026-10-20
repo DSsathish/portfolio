@@ -1,0 +1,196 @@
+/*
+ * Motion layer — LottieFiles animations + scroll/pointer motion layered on top of
+ * the prebuilt React bundle. Uses the individual `translate` / `scale` properties so
+ * it never clobbers Tailwind's own `transform` utilities.
+ */
+
+:root {
+  --mx-amber: #fbbf24;
+  --mx-amber-deep: #f59e0b;
+  --mx-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- Scroll progress ---------- */
+.mx-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 2px;
+  z-index: 100;
+  pointer-events: none;
+  transform-origin: 0 50%;
+  transform: scaleX(var(--mx-progress, 0));
+  background: linear-gradient(90deg, var(--mx-amber-deep), var(--mx-amber) 60%, #a78bfa);
+  box-shadow: 0 0 12px rgb(251 191 36 / 0.6);
+}
+
+/* ---------- Pointer glow ---------- */
+.mx-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 560px;
+  height: 560px;
+  margin: -280px 0 0 -280px;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(251 191 36 / 0.07), rgb(251 191 36 / 0.025) 35%, transparent 65%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  will-change: transform;
+}
+.mx-glow.is-active { opacity: 1; }
+
+/* ---------- Card spotlight (follows pointer inside cards) ---------- */
+#root .relative.border[class*="rounded-2xl"]::after,
+#root .relative.border[class*="rounded-3xl"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--mx-spot-o, 0);
+  transition: opacity 0.35s ease;
+  background: radial-gradient(420px circle at var(--mx-x, 50%) var(--mx-y, 50%), rgb(251 191 36 / 0.08), transparent 45%);
+}
+
+/* ---------- Scroll reveal ---------- */
+.mx-reveal {
+  opacity: 0;
+  translate: 0 28px;
+}
+.mx-reveal.mx-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.9s var(--mx-ease-out) var(--mx-delay, 0ms),
+    translate 0.9s var(--mx-ease-out) var(--mx-delay, 0ms);
+}
+
+/* ---------- Ambient orbs drift ---------- */
+#hero > .absolute.rounded-full,
+#contact .absolute.rounded-full.blur-3xl {
+  animation: mx-drift 14s ease-in-out infinite alternate;
+}
+#hero > .absolute.rounded-full:nth-child(2) { animation-duration: 18s; animation-direction: alternate-reverse; }
+@keyframes mx-drift {
+  0%   { translate: 0 0;        scale: 1; }
+  50%  { translate: 60px -30px; scale: 1.15; }
+  100% { translate: -50px 40px; scale: 0.95; }
+}
+
+/* ---------- Hero headline ---------- */
+#hero h2 > span.text-amber-400 {
+  background: linear-gradient(100deg, #fbbf24 0%, #fbbf24 40%, #fff7d6 50%, #fbbf24 60%, #fbbf24 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: mx-shimmer 5s ease-in-out 1.2s infinite;
+}
+@keyframes mx-shimmer {
+  0%   { background-position: 100% 0; }
+  60%, 100% { background-position: 0% 0; }
+}
+
+/* ---------- Lottie hosts ---------- */
+.mx-lottie {
+  display: block;
+  opacity: 0;
+  scale: 0.92;
+  transition: opacity 0.8s var(--mx-ease-out), scale 0.8s var(--mx-ease-out);
+}
+.mx-lottie.is-loaded { opacity: 1; scale: 1; }
+.mx-lottie svg { display: block; }
+
+/* Hero centerpiece */
+#hero > .max-w-7xl { position: relative; }
+.mx-hero-art {
+  position: absolute;
+  top: -12px;
+  right: 0;
+  width: clamp(240px, calc(100% - 50rem), 470px);
+  aspect-ratio: 1;
+  z-index: 0;
+  pointer-events: none;
+  translate: var(--mx-px, 0) var(--mx-py, 0);
+  transition: translate 0.6s var(--mx-ease-out);
+}
+.mx-hero-art::before {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(251 191 36 / 0.16), rgb(56 189 248 / 0.06) 45%, transparent 70%);
+  filter: blur(30px);
+  animation: mx-breathe 6s ease-in-out infinite;
+}
+.mx-hero-art .mx-ring {
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  border: 1px dashed rgb(251 191 36 / 0.18);
+  animation: mx-spin 40s linear infinite;
+}
+.mx-hero-art .mx-ring:nth-child(2) {
+  inset: -4%;
+  border: 1px solid rgb(148 163 184 / 0.08);
+  animation-duration: 70s;
+  animation-direction: reverse;
+}
+.mx-hero-art .mx-lottie { position: absolute; inset: 0; }
+@keyframes mx-breathe { 0%, 100% { opacity: 0.7; scale: 0.95; } 50% { opacity: 1; scale: 1.05; } }
+@keyframes mx-spin { to { rotate: 360deg; } }
+
+/* Hero text sits above the art on narrow screens */
+#hero .max-w-3xl { position: relative; z-index: 1; }
+@media (max-width: 1279px) {
+  .mx-hero-art { width: 240px; top: -40px; right: -24px; opacity: 0.35; }
+}
+@media (max-width: 639px) {
+  .mx-hero-art { width: 190px; top: -70px; right: -50px; opacity: 0.25; }
+}
+
+/* Scroll cue: Lottie replaces the bouncing chevron */
+#hero > .animate-bounce.mx-has-cue { animation: none; }
+#hero > .mx-has-cue a > svg { display: none; }
+.mx-scroll-cue { width: 44px; height: 44px; }
+
+/* Section header icons */
+.mx-section-icon {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  margin-left: auto;
+  filter: drop-shadow(0 0 14px rgb(251 191 36 / 0.18));
+}
+@media (max-width: 639px) {
+  .mx-section-icon { width: 44px; height: 44px; }
+}
+/* Some source animations carry a lot of empty canvas; zoom them to fill the slot. */
+.mx-section-icon[data-lottie="paper-plane"] svg { scale: 2.6; }
+.mx-section-icon[data-lottie="rocket-launch"] svg { scale: 1.3; }
+
+/* Contact card art */
+.mx-contact-art {
+  position: absolute;
+  right: clamp(1rem, 4vw, 3.5rem);
+  top: 50%;
+  translate: 0 -50%;
+  width: clamp(180px, 24vw, 300px);
+  aspect-ratio: 1;
+  pointer-events: none;
+}
+@media (max-width: 1023px) { .mx-contact-art { display: none; } }
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .mx-reveal { opacity: 1; translate: none; }
+  .mx-glow, .mx-progress { display: none; }
+  #hero > .absolute.rounded-full,
+  #contact .absolute.rounded-full.blur-3xl,
+  #hero h2 > span.text-amber-400,
+  .mx-hero-art::before,
+  .mx-hero-art .mx-ring { animation: none; }
+}
